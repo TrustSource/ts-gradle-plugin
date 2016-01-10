@@ -1,0 +1,10 @@
+/*
+ *
+ * Copyright (c) 2016. Enterprise Architecture Group, EACG
+ *
+ * SPDX-License-Identifier:	MIT
+ *
+ */
+
+rootProject.name = 'ecs-gradle-plugin'
+
