@@ -8,10 +8,10 @@
 
 package de.eacg.ecs.gradle.plugin
 
-import de.eacg.ecs.plugin.JsonCredentials
-import de.eacg.ecs.plugin.rest.Dependency
-import de.eacg.ecs.plugin.rest.RestApi
-import de.eacg.ecs.plugin.rest.Scan
+import de.eacg.ecs.client.JsonProperties
+import de.eacg.ecs.client.Dependency
+import de.eacg.ecs.client.RestClient
+import de.eacg.ecs.client.Scan
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleVersionIdentifier
@@ -31,9 +31,11 @@ class ScanTask extends DefaultTask {
     def scan() {
         def scanExt = project.ecsPlugin
 
-        JsonCredentials credentials = readAndCheckCredentials(scanExt);
+        def userAgent = "${project.name}/${project.version}"
 
-        def abc = scanExt.configurations
+        JsonProperties apiClientConfig = readAndCheckCredentials(scanExt);
+
+
 
         println "Scanning with ${scanExt.configurations.first()}"
         Configuration configuration = project.configurations.getByName(scanExt.configurations.first())
@@ -52,9 +54,7 @@ class ScanTask extends DefaultTask {
         if(scanExt.skipTransfer) {
             println 'Skipping transfer.'
         } else {
-            RestApi restApi = new RestApi(scanExt.baseUrl, scanExt.apiPath,
-                    credentials.getApiKey(scanExt.apiKey),
-                    credentials.getUser(scanExt.userName))
+            RestClient restApi = new RestClient(apiClientConfig, userAgent);
 
             Scan scan = new Scan(scanExt.projectName, scanExt.moduleName, scanExt.moduleId, ecsRootDependency);
             transferScan(restApi, scan)
@@ -113,7 +113,7 @@ class ScanTask extends DefaultTask {
             }
         }
 
-        return builder.getDependency();
+        return builder.buildDependency();
     }
 
     public printDependencies(Dependency d, int level) {
@@ -154,33 +154,36 @@ class ScanTask extends DefaultTask {
         }
     }
 
-    private JsonCredentials readAndCheckCredentials(def scanExt) {
+    private JsonProperties readAndCheckCredentials(def scanExt) {
+        JsonProperties properties
+
         try {
-            JsonCredentials credentials = new JsonCredentials((String)scanExt.credentials);
-            checkMandatoryParameter("userName", credentials.getUser(scanExt.userName));
-            checkMandatoryParameter("apiKey", credentials.getApiKey(scanExt.apiKey));
-            return credentials;
+            properties = new JsonProperties((String)scanExt.credentials);
         } catch (Exception e) {
             println "Evaluation of user credentials failed: ${e.toString()}"
             throw new RuntimeException("Exception while evaluating user credentials", e);
         }
-    }
+        properties.setUserName(scanExt.userName)
+        properties.setApiKey(scanExt.apiKey)
+        properties.setBaseUrl(scanExt.baseUrl)
+        properties.setApiPath(scanExt.apiPath)
 
-    private void checkMandatoryParameter(String name, String p) throws RuntimeException {
-        if (p == null || p.isEmpty()) {
-            String err = "The mandatory parameter '${name}' for plugin 'ecs-gradle-plugin' is missing or invalid"
+        def missingKeys = properties.validate()
+        if(missingKeys.isEmpty() == false) {
+            String err = "The mandatory parameter(s) '${missingKeys}' for plugin 'ecs-gradle-plugin' is/are missing or invalid"
             print err
             throw new RuntimeException("Exception: " + err);
         }
+        return properties;
     }
 
-    private void transferScan(RestApi api, Scan scan) {
+    private void transferScan(RestClient client, Scan scan) {
         try {
-            String body = api.transferScan(scan);
-            println "API Response: code: ${api.getResponseStatus()}, body: ${body}"
+            String body = client.transferScan(scan);
+            println "API Response: code: ${client.getResponseStatus()}, body: ${body}"
 
-            if (api.getResponseStatus() != 201) {
-                println "Failed : HTTP error code : ${api.getResponseStatus()}"
+            if (client.getResponseStatus() != 201) {
+                println "Failed : HTTP error code : ${client.getResponseStatus()}"
             }
         } catch (Exception e) {
             println e

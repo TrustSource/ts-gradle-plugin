@@ -7,19 +7,11 @@
  */
 
 group 'de.eacg'
-version '1.0-SNAPSHOT'
+version '0.1.1-SNAPSHOT'
 
 buildscript {
     dependencies {
-        classpath group: 'de.eacg', name: 'ecs-gradle-plugin', version: '1.0-SNAPSHOT'
-        classpath(group: 'de.eacg', name: 'ecs-mvn-plugin', version:'0.1.3') {
-            exclude group: 'org.sonatype.sisu', module: 'sisu-guice'
-            exclude group: 'org.codehaus.mojo', module: 'license-maven-plugin'
-            exclude group: 'org.apache.maven'
-            exclude group: 'org.apache.maven.shared'
-            exclude group: 'org.apache.maven.plugin-tools'
-            exclude group: 'org.twdata.maven'
-        }
+        classpath 'de.eacg:ecs-gradle-plugin:0.1.1-SNAPSHOT'
 
     }
     repositories {
@@ -50,23 +42,14 @@ uploadArchives {
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile(group: 'de.eacg', name: 'ecs-mvn-plugin', version:'0.1.3') {
-        exclude group: 'org.sonatype.sisu', module: 'sisu-guice'
-        exclude group: 'org.codehaus.mojo', module: 'license-maven-plugin'
-        exclude group: 'org.apache.maven'
-        exclude group: 'org.apache.maven.shared'
-        exclude group: 'org.apache.maven.plugin-tools'
-        exclude group: 'org.twdata.maven'
-
-    }
+    compile 'de.eacg:ecs-java-client:0.1.0-SNAPSHOT'
     testCompile 'junit:junit:4.12'
-    testCompile 'de.eacg:ecs-mvn-plugin:0.1.3'
 }
 
 ecsPlugin{
-    configuration 'runtime', 'testCompile'
     configuration 'runtime'
     credentials =  '~/.ecsrc.json'
 
-    skipTransfer = true
+    skipTransfer = false
+    baseUrl = "http://localhost:3000"
 }
