@@ -87,19 +87,17 @@ signing {
 }
 
 archivesBaseName = 'ecs-gradle-plugin'
+if (!hasProperty('ossrhUsername')) {
+    ext.ossrhUsername = ''
+}
+if (!hasProperty('ossrhPassword')) {
+    ext.ossrhPassword = ''
+}
+
 uploadArchives {
     repositories {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-
-            if (!hasProperty('ossrhUsername')) {
-                ext.ossrhUsername = ''
-            }
-            if (!hasProperty('ossrhPassword')) {
-                ext.ossrhPassword = ''
-            }
-
 
             repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
                 authentication(userName: ossrhUsername, password: ossrhPassword)
