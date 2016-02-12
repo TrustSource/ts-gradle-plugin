@@ -8,8 +8,8 @@
 
 package de.eacg.ecs.gradle.plugin
 
-import de.eacg.ecs.client.JsonProperties
 import de.eacg.ecs.client.Dependency
+import de.eacg.ecs.client.JsonProperties
 import de.eacg.ecs.client.RestClient
 import de.eacg.ecs.client.Scan
 import org.gradle.api.DefaultTask
@@ -26,19 +26,32 @@ import org.gradle.api.tasks.TaskAction
 class ScanTask extends DefaultTask {
 
     Map<ModuleVersionIdentifier, DependencyMetaInf> metaInfCache = new HashMap<>()
+    def verbose = false
+    def prefixString
 
     @TaskAction
     def scan() {
         def scanExt = project.ecsPlugin
+        def projProps = new ProjectProperties()
 
-        def userAgent = "${project.name}/${project.version}"
+        def userAgent = "${projProps.getName()}/${projProps.getVersion()}"
+        this.verbose = scanExt.verbose
+        this.prefixString = 'depdency-scan =>'
 
         JsonProperties apiClientConfig = readAndCheckCredentials(scanExt);
 
+        if (scanExt.skip) {
+            println "${prefixString} Skipping execution"
+            return
+        }
 
+        /**
+         *  TODO: allow more than one configurations????
+         */
 
-        println "Scanning with ${scanExt.configurations.first()}"
-        Configuration configuration = project.configurations.getByName(scanExt.configurations.first())
+        def firstConfig = scanExt.configurations.first()
+        println "${prefixString} Scanning with '${firstConfig}' configuration"
+        Configuration configuration = project.configurations.getByName(firstConfig)
 
         ResolutionResult result = configuration.getIncoming().getResolutionResult()
         ResolvedComponentResult root = result.getRoot();
@@ -49,10 +62,12 @@ class ScanTask extends DefaultTask {
         populateMetaInfCache(pomsConfig)
 
         def ecsRootDependency = mapDependencies(root)
-        printDependencies(ecsRootDependency, 0)
+        if (verbose) {
+            printDependencies(ecsRootDependency, 0)
+        }
 
         if(scanExt.skipTransfer) {
-            println 'Skipping transfer.'
+            println "${prefixString} Skipping transfer."
         } else {
             RestClient restApi = new RestClient(apiClientConfig, userAgent);
 
@@ -180,7 +195,7 @@ class ScanTask extends DefaultTask {
     private void transferScan(RestClient client, Scan scan) {
         try {
             String body = client.transferScan(scan);
-            println "API Response: code: ${client.getResponseStatus()}, body: ${body}"
+            println "${prefixString} Response: code: ${client.getResponseStatus()}, message: ${body}"
 
             if (client.getResponseStatus() != 201) {
                 println "Failed : HTTP error code : ${client.getResponseStatus()}"
@@ -192,20 +207,18 @@ class ScanTask extends DefaultTask {
 
     private Set<String> getConfigurations(def scanExt) {
         Set<String> configs = scanExt.configurations
-        if(configs.isEmpty()) {
-            configs << 'default'
-        }
     }
 
 
     private static class DependencyLicenseInf {
 
+        String name;
+        String url;
+
         DependencyLicenseInf(String name, String url) {
             this.name = name;
             this.url = url;
         }
-        String name;
-        String url;
     }
 
     private static class DependencyMetaInf {
