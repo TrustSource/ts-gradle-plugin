@@ -16,10 +16,10 @@ import static org.junit.Assert.assertTrue
 
 class EcsPluginTest {
     @Test
-    public void greeterPluginAddsGreetingTaskToProject() {
+    public void ecsPluginAddsScanTaskToProject() {
         Project project = ProjectBuilder.builder().build()
         project.pluginManager.apply 'de.eacg.ecs.plugin.gradle'
 
-        assertTrue(project.tasks.scan instanceof ScanTask)
+        assertTrue(project.tasks.'dependency-scan' instanceof ScanTask)
     }
 }
