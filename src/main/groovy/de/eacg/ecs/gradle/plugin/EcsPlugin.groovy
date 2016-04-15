@@ -18,6 +18,7 @@ class EcsPlugin implements Plugin<Project> {
         project.ecsPlugin.moduleName = project.name
         project.ecsPlugin.moduleId = project.group + ':' + project.name
         project.task('dependency-scan', type: ScanTask)
+        project.task('ecsScan', type: ScanTask)   // alias
     }
 }
 

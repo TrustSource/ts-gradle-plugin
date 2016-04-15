@@ -14,7 +14,7 @@ import java.util.Properties;
 public class ProjectProperties extends Properties {
 
     public ProjectProperties() throws IOException {
-        super.load(this.getClass().getResourceAsStream("/project.properties"));
+        load(ProjectProperties.class.getResourceAsStream("/project.properties"));
     }
 
     public String getName() {

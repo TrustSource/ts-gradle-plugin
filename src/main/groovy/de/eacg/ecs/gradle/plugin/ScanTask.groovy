@@ -16,11 +16,13 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.ResolvedArtifact
+import org.gradle.api.artifacts.UnknownConfigurationException
 import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolutionResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.specs.Spec
+import org.gradle.api.tasks.StopActionException
 import org.gradle.api.tasks.TaskAction
 
 class ScanTask extends DefaultTask {
@@ -36,7 +38,7 @@ class ScanTask extends DefaultTask {
 
         def userAgent = "${projProps.getName()}/${projProps.getVersion()}"
         this.verbose = scanExt.verbose
-        this.prefixString = 'depdency-scan =>'
+        this.prefixString = 'ecsScan =>'
 
         JsonProperties apiClientConfig = readAndCheckCredentials(scanExt);
 
@@ -49,9 +51,7 @@ class ScanTask extends DefaultTask {
          *  TODO: allow more than one configurations????
          */
 
-        def firstConfig = scanExt.configurations.first()
-        println "${prefixString} Scanning with '${firstConfig}' configuration"
-        Configuration configuration = project.configurations.getByName(firstConfig)
+        Configuration configuration = getConfiguration(scanExt);
 
         ResolutionResult result = configuration.getIncoming().getResolutionResult()
         ResolvedComponentResult root = result.getRoot();
@@ -66,7 +66,7 @@ class ScanTask extends DefaultTask {
             printDependencies(ecsRootDependency, 0)
         }
 
-        if(scanExt.skipTransfer) {
+        if (scanExt.skipTransfer) {
             println "${prefixString} Skipping transfer."
         } else {
             RestClient restApi = new RestClient(apiClientConfig, userAgent);
@@ -75,7 +75,8 @@ class ScanTask extends DefaultTask {
             transferScan(restApi, scan)
         }
     }
-    
+
+
     public setupPomConfig(ResolvedComponentResult rcr, Configuration pomsConfig) {
         def modVersion = rcr.getModuleVersion()
         if(modVersion != null && (modVersion.group != project.group || modVersion.name != project.name)) {
@@ -143,6 +144,17 @@ class ScanTask extends DefaultTask {
         }
         d.dependencies.each {
             owner.printDependencies(it, level +1)
+        }
+    }
+
+    private Configuration getConfiguration(def scanExt) {
+        def firstConfig = scanExt.configurations.first()
+        println "${prefixString} Scanning with '${firstConfig}' configuration"
+        try {
+            return project.configurations.getByName(firstConfig)
+        } catch (UnknownConfigurationException e) {
+            println "${prefixString} Configuration '${firstConfig}' not found."
+            throw new StopActionException();
         }
     }
 
