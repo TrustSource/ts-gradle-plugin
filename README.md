@@ -1,4 +1,4 @@
-# ecs-gradle-plugin
+# TrustSource ecs-gradle-plugin
 Gradle plugin to allow package transfer from gradle to TrustSource.
 
 [![Build Status](https://travis-ci.org/eacg-gmbh/ecs-gradle-plugin.svg?branch=master)](https://travis-ci.org/eacg-gmbh/ecs-gradle-plugin)
