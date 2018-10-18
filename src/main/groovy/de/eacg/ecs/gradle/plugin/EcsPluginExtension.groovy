@@ -14,7 +14,7 @@ package de.eacg.ecs.gradle.plugin
 class EcsPluginExtension {
     def configurations = []
 
-    String baseUrl = 'https://ecs-app.eacg.de'
+    String baseUrl = 'https://app.trustsource.io'
     String apiPath = '/api/v1'
 
     String projectName
