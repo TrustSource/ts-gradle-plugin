@@ -29,6 +29,23 @@ class EcsPluginExtension {
     Boolean skipTransfer = false
     Boolean verbose = false
 
+    String proxyUrl
+    String proxyPort
+
+    String proxyUser
+    String proxyPass
+
+
+    Boolean allowBreakBuild;
+    Boolean breakOnLegalIssues;
+
+    Boolean breakOnVulnerabilities;
+    Boolean breakOnViolationsOnly;
+
+    Boolean breakOnViolationsAndWarnings;
+    Boolean assumeComponentsModified;
+
+
     void configuration(String... confs) {
         for (String s in confs) {
             configurations << s

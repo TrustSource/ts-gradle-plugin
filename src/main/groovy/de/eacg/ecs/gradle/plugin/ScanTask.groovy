@@ -147,7 +147,7 @@ class ScanTask extends DefaultTask {
         }
     }
 
-    private Configuration getConfiguration(def scanExt) {
+    protected Configuration getConfiguration(def scanExt) {
         def firstConfig = scanExt.configurations.first()
         println "${prefixString} Scanning with '${firstConfig}' configuration"
         try {
@@ -158,7 +158,7 @@ class ScanTask extends DefaultTask {
         }
     }
 
-    private void populateMetaInfCache(Configuration pomsConfig) {
+    protected void populateMetaInfCache(Configuration pomsConfig) {
         try {
             def resolvedPomsConfig = pomsConfig.resolvedConfiguration.lenientConfiguration
             resolvedPomsConfig.getArtifacts(new Spec<org.gradle.api.artifacts.Dependency>(){
@@ -181,7 +181,7 @@ class ScanTask extends DefaultTask {
         }
     }
 
-    private JsonProperties readAndCheckCredentials(def scanExt) {
+    protected JsonProperties readAndCheckCredentials(def scanExt) {
         JsonProperties properties
 
         try {
@@ -194,6 +194,11 @@ class ScanTask extends DefaultTask {
         properties.setApiKey(scanExt.apiKey)
         properties.setBaseUrl(scanExt.baseUrl)
         properties.setApiPath(scanExt.apiPath)
+
+        properties.setProxyUrl(scanExt.proxyUrl);
+        properties.setProxyPort(scanExt.proxyPort);
+        properties.setProxyUser(scanExt.proxyUser);
+        properties.setProxyPass(scanExt.proxyPass);
 
         def missingKeys = properties.validate()
         if(missingKeys.isEmpty() == false) {

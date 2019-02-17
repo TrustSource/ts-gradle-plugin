@@ -14,11 +14,16 @@ import org.gradle.api.Project
 class EcsPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.extensions.create('ecsPlugin', EcsPluginExtension)
+
         project.ecsPlugin.projectName = project.name
         project.ecsPlugin.moduleName = project.name
         project.ecsPlugin.moduleId = project.group + ':' + project.name
+
         project.task('dependency-scan', type: ScanTask)
         project.task('ecsScan', type: ScanTask)   // alias
+
+        project.task('dependency-check', type: CheckTask)
+        project.task('ecsCheck', type: CheckTask)   // alias
     }
 }
 
