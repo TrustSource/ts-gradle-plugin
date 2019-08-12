@@ -21,6 +21,9 @@ class EcsPluginExtension {
     String moduleName
     String moduleId
 
+    String branch
+    String tag
+
     String credentials
     String userName
     String apiKey

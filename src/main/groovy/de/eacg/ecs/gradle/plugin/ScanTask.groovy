@@ -71,7 +71,7 @@ class ScanTask extends DefaultTask {
         } else {
             RestClient restApi = new RestClient(apiClientConfig, userAgent);
 
-            Scan scan = new Scan(scanExt.projectName, scanExt.moduleName, scanExt.moduleId, ecsRootDependency);
+            Scan scan = new Scan(scanExt.projectName, scanExt.moduleName, scanExt.moduleId, scanExt.branch, scanExt.tag, ecsRootDependency);
             transferScan(restApi, scan)
         }
     }

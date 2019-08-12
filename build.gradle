@@ -8,7 +8,7 @@
 
 
 group 'de.eacg'
-version '0.2.0'
+version '0.2.1'
 
 buildscript {
     dependencies {
@@ -60,7 +60,7 @@ ecsPlugin {                                                       // uncomment t
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile 'de.eacg:ecs-java-client:0.2.2'
+    compile 'de.eacg:ecs-java-client:0.2.3'
     testCompile 'junit:junit:4.12'
 }
 
